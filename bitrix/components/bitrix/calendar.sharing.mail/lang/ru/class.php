@@ -1,3 +1,0 @@
-<?php
-$MESS['CALENDAR_SHARING_MAIL_TITLE_CREATED'] = 'Встреча создана';
-$MESS['CALENDAR_SHARING_MAIL_TITLE_CANCELLED'] = 'Встреча отменена';

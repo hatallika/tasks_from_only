@@ -1,3 +1,0 @@
-<?php
-$MESS["SALE_CASHBOX_OFD_SETTINGS"] = "Mode";
-$MESS["SALE_CASHBOX_OFD_TEST_MODE"] = "OFD test mode";

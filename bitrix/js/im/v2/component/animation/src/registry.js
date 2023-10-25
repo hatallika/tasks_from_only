@@ -1,1 +1,0 @@
-export {ExpandAnimation} from './expand';

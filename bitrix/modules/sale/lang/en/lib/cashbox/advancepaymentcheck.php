@@ -1,3 +1,0 @@
-<?php
-$MESS["SALE_CASHBOX_ADVANCE_PAYMENT_ITEM_NAME"] = "Advance payment";
-$MESS["SALE_CASHBOX_ADVANCE_PAYMENT_NAME"] = "Advance payment";

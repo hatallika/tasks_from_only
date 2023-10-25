@@ -6,6 +6,13 @@ $aMenuLinks = Array(
 		Array(), 
 		Array(), 
 		"" 
+	),
+	Array(
+		"Форма", 
+		"/forma.php", 
+		Array(), 
+		Array(), 
+		"" 
 	)
 );
 ?>

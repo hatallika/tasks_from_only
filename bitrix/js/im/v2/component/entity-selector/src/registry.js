@@ -1,1 +1,0 @@
-export {AddToChat} from './add-to-chat/add-to-chat';

@@ -9,13 +9,11 @@ Thumbs.db
 .DS_Store
 ._.DS_Store
 /robots.txt
- 
 /bitrix/.settings.php
 /bitrix/activities/
 /bitrix/admin/
 /bitrix/backup/
 /bitrix/click.php
-
 /bitrix/coupon_activation.php
 /bitrix/gadgets/
 /bitrix/image_uploader/
@@ -55,3 +53,6 @@ Thumbs.db
 /bitrix/html_pages/
 /bitrix/blocks/
 /bitrix/resize_cache/
+/bitrix/*
+!/bitrix/templates
+/uploads/*
