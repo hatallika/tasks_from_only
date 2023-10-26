@@ -55,4 +55,4 @@ Thumbs.db
 /bitrix/resize_cache/
 /bitrix/*
 !/bitrix/templates
-/uploads/*
+/upload/*

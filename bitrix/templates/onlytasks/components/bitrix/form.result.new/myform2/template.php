@@ -7,7 +7,6 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
     <div class="contact-form">
         <?= $arResult["FORM_HEADER"] ?>
         <input type="hidden" name="web_form_submit" value="Y">
-
         <div class="contact-form__head">
             <? if ($arResult["isFormDescription"] == "Y" || $arResult["isFormTitle"] == "Y"): ?>
                 <? if ($arResult["isFormTitle"]): ?>
@@ -22,8 +21,9 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
             <div class="contact-form__form-inputs">
                 <? foreach ($arResult["QUESTIONS"] as $FIELD_SID => $arQuestion): ?>
                     <? if ($arQuestion['STRUCTURE'][0]['FIELD_TYPE'] == 'text' || $arQuestion['STRUCTURE'][0]['FIELD_TYPE'] == 'email'): ?>
-                        <div class="input contact-form__input"><label class="input__label"
-                                                                      for="<?= "form_{$arQuestion['STRUCTURE'][0]['FIELD_TYPE']}_{$arQuestion['STRUCTURE'][0]['ID']}" ?>">
+                        <div class="input contact-form__input">
+                            <label class="input__label"
+                                   for="<?= "form_{$arQuestion['STRUCTURE'][0]['FIELD_TYPE']}_{$arQuestion['STRUCTURE'][0]['ID']}" ?>">
                                 <div class="input__label-text"><?= $arQuestion['CAPTION'] ?></div>
                                 <input class="input__input <?= (($arResult['FORM_ERRORS'][$FIELD_SID]) && ($arResult["isFormErrors"] == "Y")) ? "invalid" : "" ?>"
                                        type="<?= $arQuestion['STRUCTURE'][0]['FIELD_TYPE'] ?>"
@@ -32,8 +32,8 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
                                        value="<?= $arQuestion['STRUCTURE'][0]['VALUE'] ?>"
                                        required="">
                                 <div class="input__notification"><?= $arResult['FORM_ERRORS'][$FIELD_SID] ?></div>
-
-                            </label></div>
+                            </label>
+                        </div>
                     <? elseif ($arQuestion['STRUCTURE'][0]['FIELD_TYPE'] == 'hidden'): ?>
                         <?= $arQuestion["HTML_CODE"] ?>
                     <? endif; ?>
@@ -52,7 +52,8 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
                                         name="<?= "form_{$arQuestion['STRUCTURE'][0]['FIELD_TYPE']}_{$arQuestion['STRUCTURE'][0]['ID']}" ?>"
                                         value="<?= $arQuestion['STRUCTURE'][0]['VALUE'] ?>"></textarea>
                                 <div class="input__notification"><?= $arResult['FORM_ERRORS'][$FIELD_SID] ?></div>
-                            </label></div>
+                            </label>
+                        </div>
                     <? endif ?>
                 <? endforeach; ?>
             </div>
@@ -68,7 +69,6 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
                 </button>
             </div>
         </div>
-        <!--        --><?php //var_dump($arResult);?>
         <?= $arResult["FORM_FOOTER"] ?>
     </div>
 <? endif; ?>
