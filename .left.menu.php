@@ -2,14 +2,14 @@
 $aMenuLinks = Array(
 	Array(
 		"Задача1", 
-		"/information.php", 
+		SITE_DIR."/information.php", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Форма", 
-		"/forma.php", 
+		SITE_DIR."/forma.php", 
 		Array(), 
 		Array(), 
 		"" 

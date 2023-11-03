@@ -2,52 +2,49 @@
 $aMenuLinks = Array(
 	Array(
 		"Меню", 
-		"/examples/menu/", 
+		SITE_DIR."/examples/menu/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Контролируемое скачивание", 
-		"/examples/download/", 
+		SITE_DIR."/examples/download/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Импорт RSS", 
-		"/examples/rss/", 
+		SITE_DIR."/examples/rss/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Настраиваемая регистрация", 
-		"/examples/custom-registration/", 
+		SITE_DIR."/examples/custom-registration/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
-
 	Array(
 		"Мои компоненты", 
-		"/examples/my-components/", 
+		SITE_DIR."/examples/my-components/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
-
 	Array(
 		"Правила обработки адресов (ЧПУ)", 
-		"/examples/sef/", 
+		SITE_DIR."/examples/sef/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
-	
 	Array(
 		"Форма обратной связи", 
-		"/examples/feedback/", 
+		SITE_DIR."/examples/feedback/", 
 		Array(), 
 		Array(), 
 		"" 
