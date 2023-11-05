@@ -29,7 +29,6 @@ $this->setFrameMode(true);
                         data-object-fit="cover"/>
             </div>
         <?endif;?>
-
         <div class="article-card__text">
             <div class="block-content" data-anim="anim-3">
                 <?if($arParams["DISPLAY_PREVIEW_TEXT"]!="N" && ($arResult["FIELDS"]["PREVIEW_TEXT"] ?? '')):?>
@@ -44,57 +43,57 @@ $this->setFrameMode(true);
                 <?else:?>
                     <p><?= $arResult["PREVIEW_TEXT"];?></p>
                 <?endif?>
+<!--                Оставила дополнения из класического шаблона комплексноо компонента -->
+                <?foreach($arResult["FIELDS"] as $code=>$value):
+                    if ('PREVIEW_PICTURE' == $code || 'DETAIL_PICTURE' == $code)
+                    {
+                        ?><?=GetMessage("IBLOCK_FIELD_".$code)?>:&nbsp;<?
+                        if (!empty($value) && is_array($value))
+                        {
+                            ?><img border="0" src="<?=$value["SRC"]?>" width="<?=$value["WIDTH"]?>" height="<?=$value["HEIGHT"]?>"><?
+                        }
+                    }
+                    else
+                    {
+                        ?><?=GetMessage("IBLOCK_FIELD_".$code)?>:&nbsp;<?=$value;?><?
+                    }
+                    ?><br />
+                <?endforeach;
+                foreach($arResult["DISPLAY_PROPERTIES"] as $pid=>$arProperty):?>
+
+                    <?=$arProperty["NAME"]?>:&nbsp;
+                    <?if(is_array($arProperty["DISPLAY_VALUE"])):?>
+                        <?=implode("&nbsp;/&nbsp;", $arProperty["DISPLAY_VALUE"]);?>
+                    <?else:?>
+                        <?=$arProperty["DISPLAY_VALUE"];?>
+                    <?endif?>
+                    <br />
+                <?endforeach;
+                if(array_key_exists("USE_SHARE", $arParams) && $arParams["USE_SHARE"] == "Y")
+                {
+                    ?>
+                    <div class="news-detail-share">
+                        <noindex>
+                            <?
+                            $APPLICATION->IncludeComponent("bitrix:main.share", "", array(
+                                "HANDLERS" => $arParams["SHARE_HANDLERS"],
+                                "PAGE_URL" => $arResult["~DETAIL_PAGE_URL"],
+                                "PAGE_TITLE" => $arResult["~NAME"],
+                                "SHORTEN_URL_LOGIN" => $arParams["SHARE_SHORTEN_URL_LOGIN"],
+                                "SHORTEN_URL_KEY" => $arParams["SHARE_SHORTEN_URL_KEY"],
+                                "HIDE" => $arParams["SHARE_HIDE"],
+                            ),
+                                $component,
+                                array("HIDE_ICONS" => "Y")
+                            );
+                            ?>
+                        </noindex>
+                    </div>
+                    <?
+                }
+                ?>
             </div>
-            <a class="article-card__button" href="<?=$arResult['LIST_PAGE_URL']?>">Назад к новостям</a></div>
-
+            <a class="article-card__button" href="<?=$arResult['LIST_PAGE_URL']?>">Назад к новостям</a>
+        </div>
     </div>
-
-	<?foreach($arResult["FIELDS"] as $code=>$value):
-		if ('PREVIEW_PICTURE' == $code || 'DETAIL_PICTURE' == $code)
-		{
-			?><?=GetMessage("IBLOCK_FIELD_".$code)?>:&nbsp;<?
-			if (!empty($value) && is_array($value))
-			{
-				?><img border="0" src="<?=$value["SRC"]?>" width="<?=$value["WIDTH"]?>" height="<?=$value["HEIGHT"]?>"><?
-			}
-		}
-		else
-		{
-			?><?=GetMessage("IBLOCK_FIELD_".$code)?>:&nbsp;<?=$value;?><?
-		}
-		?><br />
-	<?endforeach;
-	foreach($arResult["DISPLAY_PROPERTIES"] as $pid=>$arProperty):?>
-
-		<?=$arProperty["NAME"]?>:&nbsp;
-		<?if(is_array($arProperty["DISPLAY_VALUE"])):?>
-			<?=implode("&nbsp;/&nbsp;", $arProperty["DISPLAY_VALUE"]);?>
-		<?else:?>
-			<?=$arProperty["DISPLAY_VALUE"];?>
-		<?endif?>
-		<br />
-	<?endforeach;
-	if(array_key_exists("USE_SHARE", $arParams) && $arParams["USE_SHARE"] == "Y")
-	{
-		?>
-		<div class="news-detail-share">
-			<noindex>
-			<?
-			$APPLICATION->IncludeComponent("bitrix:main.share", "", array(
-					"HANDLERS" => $arParams["SHARE_HANDLERS"],
-					"PAGE_URL" => $arResult["~DETAIL_PAGE_URL"],
-					"PAGE_TITLE" => $arResult["~NAME"],
-					"SHORTEN_URL_LOGIN" => $arParams["SHARE_SHORTEN_URL_LOGIN"],
-					"SHORTEN_URL_KEY" => $arParams["SHARE_SHORTEN_URL_KEY"],
-					"HIDE" => $arParams["SHARE_HIDE"],
-				),
-				$component,
-				array("HIDE_ICONS" => "Y")
-			);
-			?>
-			</noindex>
-		</div>
-		<?
-	}
-	?>
 </div>

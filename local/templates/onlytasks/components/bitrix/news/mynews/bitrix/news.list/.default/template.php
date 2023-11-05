@@ -53,12 +53,11 @@ $this->setFrameMode(true);
                 <div class="article-item__background">
                     <? if ($arParams["DISPLAY_PICTURE"] != "N" && is_array($arItem["PREVIEW_PICTURE"])): ?>
                         <img src="<?= $arItem["PREVIEW_PICTURE"]["SRC"] ?>"
-                             0.39186223192351520.41491856731872767xxx"
-                        alt=""/>
+                             alt="<?= $arItem["PREVIEW_PICTURE"]["ALT"] ?>"/>
                     <? else: ?>
                         <img src="<?= "$templateFolder/images/article-item-bg-" . $key % 6 + 1 . ".jpg" ?>"
                              data-src="xxxHTMLLINKxxx0.39186223192351520.41491856731872767xxx"
-                             alt=""/>
+                             alt="bg-article-<?=$key % 6 + 1?>"/>
                     <? endif ?>
                 </div>
                 <div class="article-item__wrapper">
