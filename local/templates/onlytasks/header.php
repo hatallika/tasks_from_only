@@ -10,5 +10,15 @@
 </head>
 <body>
 <?$APPLICATION->ShowPanel();?>
+<?$APPLICATION->IncludeComponent(
+    "bitrix:breadcrumb",
+    "",
+    array(
+        "PATH" => "",
+        "SITE_ID" => "s1",
+        "START_FROM" => "0"
+    )
+);
+?>
 
 <!-- #Begin_Article -->

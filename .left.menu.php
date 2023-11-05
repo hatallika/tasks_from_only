@@ -13,6 +13,13 @@ $aMenuLinks = Array(
 		Array(), 
 		Array(), 
 		"" 
+	),
+	Array(
+		"Новости", 
+		SITE_DIR."/news.php", 
+		Array(), 
+		Array(), 
+		"" 
 	)
 );
 ?>
