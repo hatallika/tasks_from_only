@@ -1,6 +1,6 @@
 <?
 $sSectionName = "Интернет-магазин";
-$arDirProperties = array(
-
+$arDirProperties = Array(
+   "og:image" => "/upload/shop_image.jpg"
 );
 ?>

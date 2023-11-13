@@ -3,6 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=<?echo LANG_CHARSET;?>">
+<meta property="og:image" content="<?$APPLICATION->ShowProperty('og:image');?>">
 <?$APPLICATION->ShowMeta("keywords");?>
 <?$APPLICATION->ShowMeta("description");?>
 <title><?$APPLICATION->ShowTitle()?></title>

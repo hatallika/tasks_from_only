@@ -2,49 +2,56 @@
 $aMenuLinks = Array(
 	Array(
 		"Главная", 
-		"/", 
+		SITE_DIR."/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Профиль", 
-		"/personal/", 
+		SITE_DIR."/personal/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Контент", 
-		"/content/", 
+		SITE_DIR."/content/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Магазин", 
-		"/e-store/", 
+		SITE_DIR."/e-store/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Общение", 
-		"/communication/", 
+		SITE_DIR."/communication/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Социальная сеть", 
-		"/club/", 
+		SITE_DIR."/club/", 
 		Array(), 
 		Array(), 
 		"" 
 	),
 	Array(
 		"Типовые примеры", 
-		"/examples/", 
+		SITE_DIR."/examples/", 
+		Array(), 
+		Array(), 
+		"" 
+	),
+	Array(
+		"Тестовый раздел", 
+		SITE_DIR."/test/", 
 		Array(), 
 		Array(), 
 		"" 
