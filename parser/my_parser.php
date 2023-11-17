@@ -19,7 +19,7 @@ $nameColumn = 3;
 
 $vacancy = new CIBlockElement;
 
-// Выбрали поля соответствия CSV заголовки и поля IBlock (в интерфейсе)
+// Выбрали поля соответствия CSV заголовки и поля IBlock (в предполагаемом интерфейсе)
 $fieldsPair = [
     'Тип занятости:' => "ACTIVITY",
     'Сфера деятельности' => 'FIELD',
@@ -35,16 +35,27 @@ $fieldsPair = [
 ];
 
 // Получим значения полей включая и типы списки с их значениями, запишем ID таких значений
-$rsProp = CIBlockPropertyEnum::GetList(
-    ["SORT" => "ASC", "VALUE" => "ASC"],
-    ['IBLOCK_ID' => $IBLOCK_ID]
-);
+function getListProperty($IBLOCK_ID): ?array
+{
+    $rsProp = CIBlockPropertyEnum::GetList(
+        ["SORT" => "ASC", "VALUE" => "ASC"],
+        ['IBLOCK_ID' => $IBLOCK_ID]
+    );
+
+    $arProps = [];
+    while ($arProp = $rsProp->Fetch()) {
+        $key = trim($arProp['VALUE']);
+        $arProps[$arProp['PROPERTY_CODE']][$key] = $arProp['ID'];
+    }
+    return $arProps;
+}
+
 // зависимости полей, когда одно поле генерирует значение другого поля и правила генерации
 $fieldsDependence = [
     'SALARY_VALUE' => ['SALARY_TYPE', 'salary_type_rule'],
     'DATE' => ['DATE', 'date_rule']
 ];
-
+// правила обработки полей
 $rules = [
     'salary_type_rule' => function ($value) {
         if ($value == "-") return ["", "="];
@@ -64,27 +75,54 @@ $rules = [
         }
     },
     'date_rule' => function ($value) {
-        // искуственная зависимость
+        // втавляет дату
         return [date('d.m.Y'), date('d.m.Y')];
     }
 ];
 
-$arProps = [];
-while ($arProp = $rsProp->Fetch()) {
-    $key = trim($arProp['VALUE']);
-    $arProps[$arProp['PROPERTY_CODE']][$key] = $arProp['ID'];
-}
-
-$arrCode = [];
-$properties = CIBlockProperty::GetList(array("sort" => "asc", "name" => "asc"), array("ACTIVE" => "Y", "IBLOCK_ID" => $IBLOCK_ID));
-while ($prop_fields = $properties->GetNext()) {
-    $arrCode[] = $prop_fields["CODE"];
+//Получение списка полей //by CODE
+function getIBLockList_($IBLOCK_ID): ?array
+{
+    $arrCode = [];
+    $properties = CIBlockProperty::GetList(array("sort" => "asc", "name" => "asc"), array("ACTIVE" => "Y", "IBLOCK_ID" => $IBLOCK_ID));
+    while ($prop_fields = $properties->GetNext()) {
+        $arrCode[] = $prop_fields["CODE"];
+    }
+    return $arrCode;
 }
 
 // удаление старых элементов в таблице
-$rsElements = CIBlockElement::GetList([], ['IBLOCK_ID' => $IBLOCK_ID], false, false, ['ID']);
-while ($element = $rsElements->GetNext()) {
-    CIBlockElement::Delete($element['ID']);
+function deleteAllElements($IBLOCK_ID): void
+{
+    $rsElements = CIBlockElement::GetList([], ['IBLOCK_ID' => $IBLOCK_ID], false, false, ['ID']);
+    while ($element = $rsElements->GetNext()) {
+        CIBlockElement::Delete($element['ID']);
+    }
+}
+
+//Поиск ID значения в списке
+function getEnumValue(string $code, int $iblockID, string $searchItem) : ?int
+{
+    $searchItem = mb_strtolower($searchItem);
+    $enumValues = CIBlockPropertyEnum::GetList(
+        array('DEF' => 'DESC', 'SORT' => 'ASC'),
+        array('IBLOCK_ID' => $iblockID, 'CODE' => $code)
+    );
+    $enumValue = [];
+    while ($value = $enumValues->GetNext()) {
+        $enumValue[$value['ID']] = mb_strtolower($value['VALUE']);
+    }
+    // можно добавить еще правила поиска значений
+
+    if (empty($enumValue)) {
+        echo 'Значении в списке нету';
+        return null;
+    }
+    $searchValue = null;
+    if ($val = array_search($searchItem, $enumValue, true)) {
+        $searchValue = $val;
+    }
+    return $searchValue;
 }
 
 ?>
@@ -96,6 +134,8 @@ while ($element = $rsElements->GetNext()) {
 </p>
 <div>загрузка ...</div>
 <?php
+
+$arProps = getListProperty($IBLOCK_ID);
 //Получение данных в массив с ключами - имена столбцов
 $handle = fopen("{$fileDir}{$fileName}", "r");
 if ($handle) {
@@ -109,15 +149,17 @@ if ($handle) {
         } else {
             $el = [];
             foreach ($buffer as $key => $item) {
+                $listCode = $fieldsPair[$keys[$key]];
                 $item = trim($item);
+
                 if (stripos($item, '•') !== false) {
                     $item = explode('•', $item);
                     array_splice($item, 0, 1);
                     //очистка item списка от пробелов
                     $item = array_map(fn($el) => trim($el), $item);
                 }
+
                 //подготовка полученных значений для записи
-                $listCode = $fieldsPair[$keys[$key]];
                 if ($listCode) {
                     //если есть список значений в таком виде (CODE) поля
                     //сравним схожесть значений из списка поля со значением из файла
@@ -138,22 +180,34 @@ if ($handle) {
         echo "Error: unexpected fgets() fail\n";
     }
     fclose($handle);
-    //Запись в Инфоблок
+
+    // Удаление старых элементов
+    deleteAllElements($IBLOCK_ID);
+
+    //Запись в Инфоблок.
     $PROP = [];
     //Преобразуем элементы файла под запись в Инфоблок
+    $arrCode = getIBLockList_($IBLOCK_ID);
     foreach ($data as $key => $el) {
         //для каждого свойства инфоблока получим значения из файла
         foreach ($arrCode as $code) {
             $PROP[$code] = $el[array_flip($fieldsPair)[$code]];
 
-            //дополнительная обработка полей
-            //если от свойства засисит значение другого свойства, применим правила заданные ранее в предположительном интерфейсе.
+            //дополнительная обработка полей, генерация зависимого поля ( напр Зарплата => Тип зарплаты)
             if ($fieldsDependence[$code]) {
                 //применим правила из базы правил rules
                 $rule = $fieldsDependence[$code][1];
                 [$val, $type] = ($rules[$rule]($PROP[$code]));
                 $PROP[$code] = $val;
                 $PROP[$fieldsDependence[$code][0]] = $type;
+            }
+        }
+
+        foreach ($arProps as $code => $values) {
+            $searchItem = $PROP[$code];
+            if (is_string($searchItem)) {
+                $id = getEnumValue($code, $IBLOCK_ID, $searchItem);
+                if (!is_null($id)) $PROP[$code] = $id;
             }
         }
 

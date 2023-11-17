@@ -11,3 +11,4 @@ Thumbs.db
 /robots.txt
 /bitrix/*
 /upload/*
+/parser/ImportCsv.php
