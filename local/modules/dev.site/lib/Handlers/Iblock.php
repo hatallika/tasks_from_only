@@ -8,6 +8,7 @@ use CIBlockElement;
 use CIBlockProperty;
 use CIBlockSection;
 use CModule;
+use Dev\Site\Helpers\IblockTree;
 
 class Iblock
 {
@@ -26,6 +27,7 @@ class Iblock
         $IBLOCK_CODE = "";
         $USER_ID = $arFields['CREATED_BY'];
         $DATE_CREATE = "";
+        $SECTION_ID = false;
 
         //Получим имя изменяемого раздела
         $res = CIBlock::GetByID($IBLOCK_ID);
@@ -38,13 +40,11 @@ class Iblock
 
         //Получим дату создания
         $res = CIBlockElement::GetByID($ELEMENT_ID);
-        if($ar_res = $res->GetNext()){
+        if ($ar_res = $res->GetNext()) {
             $DATE_CREATE = $ar_res["DATE_CREATE"];
             //Не учитываем документооборот
-            if($ar_res["WF_PARENT_ELEMENT_ID"] >= 1) return;
+            if ($ar_res["WF_PARENT_ELEMENT_ID"] >= 1) return;
         }
-
-
 
         //CREATE LOG (SECTION, ELEMENT)
         $IBLOCK_LOG_ID = self::getIblockIdByCode('LOG');
@@ -58,7 +58,7 @@ class Iblock
             array('IBLOCK_ID' => $IBLOCK_LOG_ID, 'NAME' => $logSectionName));
         $sectionLog = $resSectionId->Fetch();
 
-        if ($sectionLog){
+        if ($sectionLog) {
             //Раздел уже есть
             $sectionLog_ID = $sectionLog['ID'];
         } else {
@@ -81,18 +81,26 @@ class Iblock
         }
 
         //Получим цепочку разделов логируемого элемента
-        //TODO сделать поиск разделов рекурсивным
-        $groups = CIBlockElement::GetElementGroups($ELEMENT_ID, true);
-        $arrSections = [];
-        while ($ar_group = $groups->Fetch()) {
-            $chain = CIBlockSection::GetNavChain($ar_group['IBLOCK_ID'], $ar_group['ID']);
 
-            while ($arNav = $chain->GetNext()) {
-                $arrSections[] = $arNav['NAME'];
-            }
-        }
+        //Вариант с помощью CIBlockSection::GetNavChain
 
-        $strSections = implode('->', $arrSections);
+//        $groups = CIBlockElement::GetElementGroups($ELEMENT_ID, true);
+//        $arrSections = [];
+//        while ($ar_group = $groups->Fetch()) {
+//            $chain = CIBlockSection::GetNavChain($ar_group['IBLOCK_ID'], $ar_group['ID']);
+//
+//            while ($arNav = $chain->GetNext()) {
+//                $arrSections[] = $arNav['NAME'];
+//            }
+//        }
+//        $strSections = implode('->', $arrSections);
+
+        //Вариант через класс с рекурсией
+
+        $elTree = (new IblockTree($IBLOCK_ID));
+        $elSectionsArr = $elTree->getIblocSectionListForElement($ELEMENT_ID);
+
+        $strSections = implode('->', $elSectionsArr);
 
         // добавляем элемент
         $arLoadProductArray = array(
@@ -128,7 +136,6 @@ class Iblock
 
         return ($iblock['ID'] > 0) ? $iblock['ID'] : 0;
     }
-
 
     function OnBeforeIBlockElementAddHandler(&$arFields)
     {
