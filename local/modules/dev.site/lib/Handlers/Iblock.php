@@ -2,16 +2,133 @@
 
 namespace Dev\Site\Handlers;
 
+use Bitrix\Iblock\IblockTable;
+use CIBlock;
+use CIBlockElement;
+use CIBlockProperty;
+use CIBlockSection;
+use CModule;
 
 class Iblock
 {
+    /**
+     * @throws \Bitrix\Main\ObjectPropertyException
+     * @throws \Bitrix\Main\SystemException
+     * @throws \Bitrix\Main\ArgumentException
+     */
     static public function addLog(&$arFields)
     {
-        // Здесь напиши свой обработчик
-        var_dump('Hello11111111111111'); 
-//        CEvent::Send("WF_NEW_IBLOCK_ELEMENT", "s1", array("ELEMENT_ID" => $arFields["ID"]));
+        $IBLOCK_ID = $arFields['IBLOCK_ID'];
+        $ACTIVE_FROM = $arFields['ACTIVE_FROM'];
+        $ELEMENT_NAME = $arFields['NAME']; //имя элемента
+        $ELEMENT_ID = $arFields['ID'];
+        $IBLOCK_NAME = "";
+        $IBLOCK_CODE = "";
+        $USER_ID = $arFields['CREATED_BY'];
+        $DATE_CREATE = "";
 
+        //Получим имя изменяемого раздела
+        $res = CIBlock::GetByID($IBLOCK_ID);
+        if ($ar_res = $res->GetNext()) {
+            $IBLOCK_NAME = $ar_res['NAME'];
+            $IBLOCK_CODE = $ar_res['CODE'];
+
+        }
+        if ($IBLOCK_CODE == 'LOG') return; // выход из логирования при изменении инфоблока LOG
+
+        //Получим дату создания
+        $res = CIBlockElement::GetByID($ELEMENT_ID);
+        if($ar_res = $res->GetNext()){
+            $DATE_CREATE = $ar_res["DATE_CREATE"];
+            //Не учитываем документооборот
+            if($ar_res["WF_PARENT_ELEMENT_ID"] >= 1) return;
+        }
+
+
+
+        //CREATE LOG (SECTION, ELEMENT)
+        $IBLOCK_LOG_ID = self::getIblockIdByCode('LOG');
+        $logSectionName = "{$IBLOCK_ID}_{$IBLOCK_NAME}";
+
+        $el = new CIBlockElement;
+
+        // поиск Раздела с именем по правилам логирования
+        $resSectionId = CIBlockSection::GetList(
+            array(),
+            array('IBLOCK_ID' => $IBLOCK_LOG_ID, 'NAME' => $logSectionName));
+        $sectionLog = $resSectionId->Fetch();
+
+        if ($sectionLog){
+            //Раздел уже есть
+            $sectionLog_ID = $sectionLog['ID'];
+        } else {
+            //Создаем раздел инфоблока с именем и кодом логируемого инфоблока
+            CModule::IncludeModule('iblock');
+            $bs = new CIBlockSection;
+            $arLoadSectionArray = array(
+                "ACTIVE" => "Y",
+                "IBLOCK_ID" => $IBLOCK_LOG_ID,
+                "NAME" => $logSectionName,
+                "CODE" => $IBLOCK_CODE,
+                "SORT" => 100,
+            );
+            if ($newSection = $bs->Add($arLoadSectionArray)) {
+                var_dump("ID новой секции: " . $newSection);
+                $sectionLog_ID = $newSection;
+            } else {
+                var_dump("Error: " . $bs->LAST_ERROR);
+            }
+        }
+
+        //Получим цепочку разделов логируемого элемента
+        //TODO сделать поиск разделов рекурсивным
+        $groups = CIBlockElement::GetElementGroups($ELEMENT_ID, true);
+        $arrSections = [];
+        while ($ar_group = $groups->Fetch()) {
+            $chain = CIBlockSection::GetNavChain($ar_group['IBLOCK_ID'], $ar_group['ID']);
+
+            while ($arNav = $chain->GetNext()) {
+                $arrSections[] = $arNav['NAME'];
+            }
+        }
+
+        $strSections = implode('->', $arrSections);
+
+        // добавляем элемент
+        $arLoadProductArray = array(
+            "MODIFIED_BY" => $USER_ID, // элемент изменен текущим пользователем
+            "IBLOCK_SECTION_ID" => $sectionLog_ID,   // элемент лежит в корне раздела
+            "IBLOCK_ID" => $IBLOCK_LOG_ID,
+            "NAME" => $ELEMENT_ID,
+            "CODE" => $ELEMENT_ID,
+            "ACTIVE" => "Y",            // активен
+            "PREVIEW_TEXT" => "$IBLOCK_NAME->$strSections->$ELEMENT_NAME",
+            "DATE_ACTIVE_FROM" => $DATE_CREATE,
+        );
+
+        if ($PRODUCT_ID = $el->Add($arLoadProductArray))
+            echo "New ID: " . $PRODUCT_ID;
+        else
+            echo "Error: " . $el->LAST_ERROR;
     }
+
+    //Получить ID инфоблока по CODE
+    static function getIblockIdByCode(string $iblockCode, int $cacheTime = 86400000): int
+    {
+        $iblock = IblockTable::getList([
+            'filter' => [
+                '=CODE' => $iblockCode
+            ],
+            'select' => ['ID'],
+            'limit' => 1,
+            'cache' => [
+                'ttl' => $cacheTime
+            ]
+        ])->fetch();
+
+        return ($iblock['ID'] > 0) ? $iblock['ID'] : 0;
+    }
+
 
     function OnBeforeIBlockElementAddHandler(&$arFields)
     {
@@ -54,6 +171,7 @@ class Iblock
                 }
             }
         }
+
 
         if ($arFields['CODE'] == 'brochures') {
             $RU_IBLOCK_ID = \Only\Site\Helpers\IBlock::getIblockID('DOCUMENTS', 'CONTENT_RU');

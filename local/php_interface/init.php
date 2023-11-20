@@ -1,20 +1,20 @@
 <?php
 
 use Dev\Site\Handlers\Iblock;
-
+// Вариант 1
 //CModule::AddAutoloadClasses(
-//    '', // не указываем имя модуля
+//    '',
 //    array(
-//        // ключ - имя класса с простанством имен, значение - путь относительно корня сайта к файлу
 //        'Only\Site\Handlers\Iblock' => '/local/modules/dev.site/lib/Handlers/Iblock.php',
 //    )
 //);
 //
-//AddEventHandler('iblock', 'OnBeforeIBlockElementAdd', Array(Iblock::class, "addLog"));
+//AddEventHandler('iblock', 'OnAfterIBlockElementAdd', Array(Iblock::class, "addLog"));
 
+// Вариант 2
 CModule::IncludeModule("dev.site");
 dev_site_autoload(Iblock::class);
-AddEventHandler('iblock', 'OnBeforeIBlockElementAdd', Array(Iblock::class, "addLog"));
+AddEventHandler('iblock', 'OnAfterIBlockElementAdd', Array(Iblock::class, "addLog"));
 
 
 
