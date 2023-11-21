@@ -9,6 +9,7 @@ use CIBlockProperty;
 use CIBlockSection;
 use CModule;
 use Dev\Site\Helpers\IblockTree;
+use Dev\Site\Helpers\Iblock as HelpersIblock;
 
 class Iblock
 {
@@ -20,16 +21,16 @@ class Iblock
     static public function addLog(&$arFields)
     {
         $IBLOCK_ID = $arFields['IBLOCK_ID'];
-        $ACTIVE_FROM = $arFields['ACTIVE_FROM'];
         $ELEMENT_NAME = $arFields['NAME']; //имя элемента
         $ELEMENT_ID = $arFields['ID'];
         $IBLOCK_NAME = "";
         $IBLOCK_CODE = "";
         $USER_ID = $arFields['CREATED_BY'];
+        $TIMESTAMP_X = "";
         $DATE_CREATE = "";
         $SECTION_ID = false;
 
-        //Получим имя изменяемого раздела
+        //Получим имя изменяемого Инфоблока
         $res = CIBlock::GetByID($IBLOCK_ID);
         if ($ar_res = $res->GetNext()) {
             $IBLOCK_NAME = $ar_res['NAME'];
@@ -38,27 +39,27 @@ class Iblock
         }
         if ($IBLOCK_CODE == 'LOG') return; // выход из логирования при изменении инфоблока LOG
 
-        //Получим дату создания
+        //Получим параметры элемента. Дата создания, изменения, участие в документообороте
         $res = CIBlockElement::GetByID($ELEMENT_ID);
         if ($ar_res = $res->GetNext()) {
             $DATE_CREATE = $ar_res["DATE_CREATE"];
-            //Не учитываем документооборот
+            $TIMESTAMP_X = $ar_res["TIMESTAMP_X"];
+            //Не учитываем документооборот чтобы не запускать слушатели дважды
             if ($ar_res["WF_PARENT_ELEMENT_ID"] >= 1) return;
         }
 
-        //CREATE LOG (SECTION, ELEMENT)
-        $IBLOCK_LOG_ID = self::getIblockIdByCode('LOG');
+        //CREATE LOG (IBLOCK -> SECTION -> ELEMENT)
+        $IBLOCK_LOG_ID = HelpersIblock::getIblockIdByCode('LOG');
         $logSectionName = "{$IBLOCK_ID}_{$IBLOCK_NAME}";
-
-        $el = new CIBlockElement;
+        $elLog = new CIBlockElement;
 
         // поиск Раздела с именем по правилам логирования
         $resSectionId = CIBlockSection::GetList(
-            array(),
-            array('IBLOCK_ID' => $IBLOCK_LOG_ID, 'NAME' => $logSectionName));
-        $sectionLog = $resSectionId->Fetch();
+            [],
+            ['IBLOCK_ID' => $IBLOCK_LOG_ID, 'NAME' => $logSectionName],
+        );
 
-        if ($sectionLog) {
+        if ($sectionLog = $resSectionId->Fetch()) {
             //Раздел уже есть
             $sectionLog_ID = $sectionLog['ID'];
         } else {
@@ -77,26 +78,14 @@ class Iblock
                 $sectionLog_ID = $newSection;
             } else {
                 var_dump("Error: " . $bs->LAST_ERROR);
+                $sectionLog_ID = false;
             }
         }
 
-        //Получим цепочку разделов логируемого элемента
+        //Поиск разделов логируемого элемента
+        //Возможен вариант с помощью CIBlockSection::GetNavChain
 
-        //Вариант с помощью CIBlockSection::GetNavChain
-
-//        $groups = CIBlockElement::GetElementGroups($ELEMENT_ID, true);
-//        $arrSections = [];
-//        while ($ar_group = $groups->Fetch()) {
-//            $chain = CIBlockSection::GetNavChain($ar_group['IBLOCK_ID'], $ar_group['ID']);
-//
-//            while ($arNav = $chain->GetNext()) {
-//                $arrSections[] = $arNav['NAME'];
-//            }
-//        }
-//        $strSections = implode('->', $arrSections);
-
-        //Вариант через класс с рекурсией
-
+        //Поиск через класс с рекурсией
         $elTree = (new IblockTree($IBLOCK_ID));
         $elSectionsArr = $elTree->getIblocSectionListForElement($ELEMENT_ID);
 
@@ -105,132 +94,33 @@ class Iblock
         // добавляем элемент
         $arLoadProductArray = array(
             "MODIFIED_BY" => $USER_ID, // элемент изменен текущим пользователем
-            "IBLOCK_SECTION_ID" => $sectionLog_ID,   // элемент лежит в корне раздела
+            "IBLOCK_SECTION_ID" => $sectionLog_ID,
             "IBLOCK_ID" => $IBLOCK_LOG_ID,
             "NAME" => $ELEMENT_ID,
             "CODE" => $ELEMENT_ID,
             "ACTIVE" => "Y",            // активен
-            "PREVIEW_TEXT" => "$IBLOCK_NAME->$strSections->$ELEMENT_NAME",
-            "DATE_ACTIVE_FROM" => $DATE_CREATE,
+            "PREVIEW_TEXT" => ($strSections) // элемент принадлежит разделам
+                ?"$IBLOCK_NAME->$strSections->$ELEMENT_NAME"
+                : "{$IBLOCK_NAME}->Корневой->{$ELEMENT_NAME}",
+            "DATE_ACTIVE_FROM" => $TIMESTAMP_X, //$DATE_CREATE //TIMESTAMP_X
         );
+        //Если такой элемент уже есть в логе, обновим его даные иначе создадим новый
+        //Так как это логирование лучше сохранять элементы  как новые при каждом изменении, но в тз написано удаление и изменение
 
-        if ($PRODUCT_ID = $el->Add($arLoadProductArray))
-            echo "New ID: " . $PRODUCT_ID;
-        else
-            echo "Error: " . $el->LAST_ERROR;
-    }
+        $arFilter = Array("NAME"=>$ELEMENT_ID,"IBLOCK_ID" => $IBLOCK_LOG_ID);
+        $res = CIBlockElement::GetList(Array(), $arFilter, false, Array("nTopCount "=>1), ['NAME', 'ID']);
 
-    //Получить ID инфоблока по CODE
-    static function getIblockIdByCode(string $iblockCode, int $cacheTime = 86400000): int
-    {
-        $iblock = IblockTable::getList([
-            'filter' => [
-                '=CODE' => $iblockCode
-            ],
-            'select' => ['ID'],
-            'limit' => 1,
-            'cache' => [
-                'ttl' => $cacheTime
-            ]
-        ])->fetch();
-
-        return ($iblock['ID'] > 0) ? $iblock['ID'] : 0;
-    }
-
-    function OnBeforeIBlockElementAddHandler(&$arFields)
-    {
-        $iQuality = 95;
-        $iWidth = 1000;
-        $iHeight = 1000;
-        /*
-         * Получаем пользовательские свойства
-         */
-        $dbIblockProps = \Bitrix\Iblock\PropertyTable::getList(array(
-            'select' => array('*'),
-            'filter' => array('IBLOCK_ID' => $arFields['IBLOCK_ID'])
-        ));
-        /*
-         * Выбираем только свойства типа ФАЙЛ (F)
-         */
-        $arUserFields = [];
-        while ($arIblockProps = $dbIblockProps->Fetch()) {
-            if ($arIblockProps['PROPERTY_TYPE'] == 'F') {
-                $arUserFields[] = $arIblockProps['ID'];
-            }
-        }
-        /*
-         * Перебираем и масштабируем изображения
-         */
-        foreach ($arUserFields as $iFieldId) {
-            foreach ($arFields['PROPERTY_VALUES'][$iFieldId] as &$file) {
-                if (!empty($file['VALUE']['tmp_name'])) {
-                    $sTempName = $file['VALUE']['tmp_name'] . '_temp';
-                    $res = \CAllFile::ResizeImageFile(
-                        $file['VALUE']['tmp_name'],
-                        $sTempName,
-                        array("width" => $iWidth, "height" => $iHeight),
-                        BX_RESIZE_IMAGE_PROPORTIONAL_ALT,
-                        false,
-                        $iQuality);
-                    if ($res) {
-                        rename($sTempName, $file['VALUE']['tmp_name']);
-                    }
-                }
-            }
-        }
-
-
-        if ($arFields['CODE'] == 'brochures') {
-            $RU_IBLOCK_ID = \Only\Site\Helpers\IBlock::getIblockID('DOCUMENTS', 'CONTENT_RU');
-            $EN_IBLOCK_ID = \Only\Site\Helpers\IBlock::getIblockID('DOCUMENTS', 'CONTENT_EN');
-            if ($arFields['IBLOCK_ID'] == $RU_IBLOCK_ID || $arFields['IBLOCK_ID'] == $EN_IBLOCK_ID) {
-                \CModule::IncludeModule('iblock');
-                $arFiles = [];
-                foreach ($arFields['PROPERTY_VALUES'] as $id => &$arValues) {
-                    $arProp = \CIBlockProperty::GetByID($id, $arFields['IBLOCK_ID'])->Fetch();
-                    if ($arProp['PROPERTY_TYPE'] == 'F' && $arProp['CODE'] == 'FILE') {
-                        $key_index = 0;
-                        while (isset($arValues['n' . $key_index])) {
-                            $arFiles[] = $arValues['n' . $key_index++];
-                        }
-                    } elseif ($arProp['PROPERTY_TYPE'] == 'L' && $arProp['CODE'] == 'OTHER_LANG' && $arValues[0]['VALUE']) {
-                        $arValues[0]['VALUE'] = null;
-                        if (!empty($arFiles)) {
-                            $OTHER_IBLOCK_ID = $RU_IBLOCK_ID == $arFields['IBLOCK_ID'] ? $EN_IBLOCK_ID : $RU_IBLOCK_ID;
-                            $arOtherElement = \CIBlockElement::GetList([],
-                                [
-                                    'IBLOCK_ID' => $OTHER_IBLOCK_ID,
-                                    'CODE' => $arFields['CODE']
-                                ], false, false, ['ID'])
-                                ->Fetch();
-                            if ($arOtherElement) {
-                                /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-                                \CIBlockElement::SetPropertyValues($arOtherElement['ID'], $OTHER_IBLOCK_ID, $arFiles, 'FILE');
-                            }
-                        }
-                    } elseif ($arProp['PROPERTY_TYPE'] == 'E') {
-                        $elementIds = [];
-                        foreach ($arValues as &$arValue) {
-                            if ($arValue['VALUE']) {
-                                $elementIds[] = $arValue['VALUE'];
-                                $arValue['VALUE'] = null;
-                            }
-                        }
-                        if (!empty($arFiles && !empty($elementIds))) {
-                            $rsElement = \CIBlockElement::GetList([],
-                                [
-                                    'IBLOCK_ID' => \Only\Site\Helpers\IBlock::getIblockID('PRODUCTS', 'CATALOG_' . $RU_IBLOCK_ID == $arFields['IBLOCK_ID'] ? '_RU' : '_EN'),
-                                    'ID' => $elementIds
-                                ], false, false, ['ID', 'IBLOCK_ID', 'NAME']);
-                            while ($arElement = $rsElement->Fetch()) {
-                                /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-                                \CIBlockElement::SetPropertyValues($arElement['ID'], $arElement['IBLOCK_ID'], $arFiles, 'FILE');
-                            }
-                        }
-                    }
-                }
-            }
+        if($ob = $res->GetNextElement())
+        {
+            $arFields = $ob->GetFields();
+            //Элемент уже есть в логе
+            $elLog->Update($arFields['ID'], $arLoadProductArray);
+        } else {
+            //Элемент еще не логировался
+            if ($PRODUCT_ID = $elLog->Add($arLoadProductArray))
+                echo "New ID: " . $PRODUCT_ID;
+            else
+                echo "Error: " . $elLog->LAST_ERROR;
         }
     }
-
 }
