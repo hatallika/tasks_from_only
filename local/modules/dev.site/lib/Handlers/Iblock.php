@@ -2,10 +2,8 @@
 
 namespace Dev\Site\Handlers;
 
-use Bitrix\Iblock\IblockTable;
 use CIBlock;
 use CIBlockElement;
-use CIBlockProperty;
 use CIBlockSection;
 use CModule;
 use Dev\Site\Helpers\IblockTree;
@@ -27,8 +25,6 @@ class Iblock
         $IBLOCK_CODE = "";
         $USER_ID = $arFields['CREATED_BY'];
         $TIMESTAMP_X = "";
-        $DATE_CREATE = "";
-        $SECTION_ID = false;
 
         //Получим имя изменяемого Инфоблока
         $res = CIBlock::GetByID($IBLOCK_ID);
@@ -42,7 +38,6 @@ class Iblock
         //Получим параметры элемента. Дата создания, изменения, участие в документообороте
         $res = CIBlockElement::GetByID($ELEMENT_ID);
         if ($ar_res = $res->GetNext()) {
-            $DATE_CREATE = $ar_res["DATE_CREATE"];
             $TIMESTAMP_X = $ar_res["TIMESTAMP_X"];
             //Не учитываем документооборот чтобы не запускать слушатели дважды
             if ($ar_res["WF_PARENT_ELEMENT_ID"] >= 1) return;
@@ -74,7 +69,7 @@ class Iblock
                 "SORT" => 100,
             );
             if ($newSection = $bs->Add($arLoadSectionArray)) {
-                var_dump("ID новой секции: " . $newSection);
+                echo ("ID новой секции: " . $newSection);
                 $sectionLog_ID = $newSection;
             } else {
                 var_dump("Error: " . $bs->LAST_ERROR);
@@ -83,9 +78,8 @@ class Iblock
         }
 
         //Поиск разделов логируемого элемента
-        //Возможен вариант с помощью CIBlockSection::GetNavChain
 
-        //Поиск через класс с рекурсией
+        //Поиск через класс с рекурсией (Возможен вариант с помощью CIBlockSection::GetNavChain)
         $elTree = (new IblockTree($IBLOCK_ID));
         $elSectionsArr = $elTree->getIblocSectionListForElement($ELEMENT_ID);
 

@@ -7,6 +7,11 @@ use Bitrix\Iblock\IblockTable;
 class Iblock
 {
     //Получить ID инфоблока по CODE // LOG - 29
+    /**
+     * @throws \Bitrix\Main\ObjectPropertyException
+     * @throws \Bitrix\Main\SystemException
+     * @throws \Bitrix\Main\ArgumentException
+     */
     static function getIblockIdByCode(string $iblockCode, int $cacheTime = 86400000): int
     {
         $iblock = IblockTable::getList([
