@@ -16,7 +16,7 @@ $this->setFrameMode(true);
 <?if($arParams["DISPLAY_TOP_PAGER"]):?>
 	<?=$arResult["NAV_STRING"]?><br />
 <?endif;?>
-
+<?$APPLICATION->ShowViewContent('myContentBlockName');?>
 <?foreach($arResult["ITEMS"] as $key =>  $iBlock):?>
     <div><?=($arResult['IBLOCKS'][$key]['NAME'])?></div>
     <?foreach($iBlock as $arItem):?>

@@ -72,7 +72,12 @@ if ($iblockExists)
 }
 
 $arComponentParameters = [
-	"GROUPS" => [],
+	"GROUPS" => [
+        "FILTER_SETTINGS" => [
+            "SORT" => 150,
+            "NAME" => "Фильтрация",
+        ],
+    ],
 	"PARAMETERS" => [
 		"AJAX_MODE" => [],
 		"IBLOCK_TYPE" => [
@@ -136,6 +141,21 @@ $arComponentParameters = [
 			"TYPE" => "STRING",
 			"DEFAULT" => "",
 		],
+        "USE_FILTER" => [
+            "PARENT" => "FILTER_SETTINGS",
+            "NAME" => "Использовать фильтр",
+            "TYPE" => "CHECKBOX",
+            "DEFAULT" => "N",
+            "REFRESH" => "Y",
+        ],
+
+        "FILTER_ELEMENTS_NAME_STR" => [
+            "PARENT" => "DATA_SOURCE",
+            "NAME" => "Элемент сожержит строку",
+            "TYPE" => "STRING",
+            "DEFAULT" => "",
+        ],
+
 		"FIELD_CODE" => CIBlockParameters::GetFieldCode(GetMessage("IBLOCK_FIELD"), "DATA_SOURCE"),
 		"PROPERTY_CODE" => [
 			"PARENT" => "DATA_SOURCE",
@@ -258,3 +278,25 @@ CIBlockParameters::AddPagerSettings(
 );
 
 CIBlockParameters::Add404Settings($arComponentParameters, $arCurrentValues);
+
+if (($arCurrentValues['USE_FILTER'] ?? 'N') === 'Y')
+{
+    $arComponentParameters["PARAMETERS"]["FILTER_NAME"] = array(
+        "PARENT" => "FILTER_SETTINGS",
+        "NAME" => GetMessage("T_IBLOCK_FILTER"),
+        "TYPE" => "STRING",
+        "DEFAULT" => "",
+    );
+    $arComponentParameters["PARAMETERS"]["FILTER_FIELD_CODE"] = CIBlockParameters::GetFieldCode(
+        GetMessage("IBLOCK_FIELD"),
+        "FILTER_SETTINGS"
+    );
+    $arComponentParameters["PARAMETERS"]["FILTER_PROPERTY_CODE"] = array(
+        "PARENT" => "FILTER_SETTINGS",
+        "NAME" => GetMessage("T_IBLOCK_PROPERTY"),
+        "TYPE" => "LIST",
+        "MULTIPLE" => "Y",
+        "VALUES" => $arProperty_LNS,
+        "ADDITIONAL_VALUES" => "Y",
+    );
+}

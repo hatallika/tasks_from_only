@@ -1,7 +1,7 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetTitle("Новая страница");
-?><?$APPLICATION->IncludeComponent(
+?><?$GLOBALS['myArrFilter'] = ['ID' => ">10"];?> <?$APPLICATION->IncludeComponent(
 	"mydev:news.list",
 	"",
 	Array(
@@ -23,9 +23,12 @@ $APPLICATION->SetTitle("Новая страница");
 		"DISPLAY_NAME" => "Y",
 		"DISPLAY_PICTURE" => "Y",
 		"DISPLAY_PREVIEW_TEXT" => "Y",
-		"DISPLAY_TOP_PAGER" => "N",
-		"FIELD_CODE" => array("",""),
+		"DISPLAY_TOP_PAGER" => "Y",
+		"FIELD_CODE" => array("NAME",""),
+		"FILTER_ELEMENTS_NAME_STR" => "",
+		"FILTER_FIELD_CODE" => array("ID","CODE","NAME",""),
 		"FILTER_NAME" => "",
+		"FILTER_PROPERTY_CODE" => array("",""),
 		"HIDE_LINK_WHEN_NO_DETAIL" => "N",
 		"IBLOCK_ID" => "",
 		"IBLOCK_TYPE" => "services",
@@ -36,8 +39,8 @@ $APPLICATION->SetTitle("Новая страница");
 		"PAGER_BASE_LINK_ENABLE" => "N",
 		"PAGER_DESC_NUMBERING" => "N",
 		"PAGER_DESC_NUMBERING_CACHE_TIME" => "36000",
-		"PAGER_SHOW_ALL" => "N",
-		"PAGER_SHOW_ALWAYS" => "N",
+		"PAGER_SHOW_ALL" => "Y",
+		"PAGER_SHOW_ALWAYS" => "Y",
 		"PAGER_TEMPLATE" => ".default",
 		"PAGER_TITLE" => "Новости",
 		"PARENT_SECTION" => "",
@@ -55,6 +58,8 @@ $APPLICATION->SetTitle("Новая страница");
 		"SORT_BY2" => "SORT",
 		"SORT_ORDER1" => "DESC",
 		"SORT_ORDER2" => "ASC",
-		"STRICT_SECTION_CHECK" => "N"
+		"STRICT_SECTION_CHECK" => "N",
+		"USE_FILTER" => "Y"
 	)
-);?><?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>
+);?><br>
+ <br><?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>
