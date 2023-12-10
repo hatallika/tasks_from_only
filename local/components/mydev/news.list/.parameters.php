@@ -136,11 +136,17 @@ $arComponentParameters = [
 			"ADDITIONAL_VALUES" => "Y",
 		],
 		"FILTER_NAME" => [
-			"PARENT" => "DATA_SOURCE",
+			"PARENT" => "FILTER_SETTINGS",
 			"NAME" => GetMessage("T_IBLOCK_FILTER"),
 			"TYPE" => "STRING",
 			"DEFAULT" => "",
 		],
+        "FILTER_ELEMENTS_NAME_STR" => [
+            "PARENT" => "FILTER_SETTINGS",
+            "NAME" => "Элемент содержит строку",
+            "TYPE" => "STRING",
+            "DEFAULT" => "",
+        ],
         "USE_FILTER" => [
             "PARENT" => "FILTER_SETTINGS",
             "NAME" => "Использовать фильтр",
@@ -149,14 +155,7 @@ $arComponentParameters = [
             "REFRESH" => "Y",
         ],
 
-        "FILTER_ELEMENTS_NAME_STR" => [
-            "PARENT" => "DATA_SOURCE",
-            "NAME" => "Элемент сожержит строку",
-            "TYPE" => "STRING",
-            "DEFAULT" => "",
-        ],
-
-		"FIELD_CODE" => CIBlockParameters::GetFieldCode(GetMessage("IBLOCK_FIELD"), "DATA_SOURCE"),
+//		"FIELD_CODE" => CIBlockParameters::GetFieldCode(GetMessage("IBLOCK_FIELD"), "DATA_SOURCE"),
 		"PROPERTY_CODE" => [
 			"PARENT" => "DATA_SOURCE",
 			"NAME" => GetMessage("T_IBLOCK_PROPERTY"),
@@ -300,3 +299,5 @@ if (($arCurrentValues['USE_FILTER'] ?? 'N') === 'Y')
         "ADDITIONAL_VALUES" => "Y",
     );
 }
+
+

@@ -31,15 +31,15 @@ class CMyDevNewsList extends CBitrixComponent
         $arParams["INCLUDE_SUBSECTIONS"] = ($arParams["INCLUDE_SUBSECTIONS"] ?? '') !== "N";
         $arParams["SET_LAST_MODIFIED"] = ($arParams["SET_LAST_MODIFIED"] ?? '') === "Y";
         //параметры постраничной навигации
-        $arParams['DISPLAY_TOP_PAGER'] = $arParams['DISPLAY_TOP_PAGER']=='Y';
-        $arParams['DISPLAY_BOTTOM_PAGER'] = $arParams['DISPLAY_BOTTOM_PAGER']=='Y';
+        $arParams['DISPLAY_TOP_PAGER'] = $arParams['DISPLAY_TOP_PAGER'] == 'Y';
+        $arParams['DISPLAY_BOTTOM_PAGER'] = $arParams['DISPLAY_BOTTOM_PAGER'] == 'Y';
         // поясняющий текст для постраничной навигации
         $arParams['PAGER_TITLE'] = trim($arParams['PAGER_TITLE']);
-        $arParams['PAGER_SHOW_ALWAYS'] = $arParams['PAGER_SHOW_ALWAYS']=='Y';
+        $arParams['PAGER_SHOW_ALWAYS'] = $arParams['PAGER_SHOW_ALWAYS'] == 'Y';
         // имя шаблона постраничной навигации
         $arParams['PAGER_TEMPLATE'] = trim($arParams['PAGER_TEMPLATE']);
         // показывать ссылку «Все элементы», с помощью которой можно показать все элементы списка?
-        $arParams['PAGER_SHOW_ALL'] = $arParams['PAGER_SHOW_ALL']=='Y';
+        $arParams['PAGER_SHOW_ALL'] = $arParams['PAGER_SHOW_ALL'] == 'Y';
 
         if (empty($arParams['SORT_BY']))
             $arParams['SORT_BY'] = 'SORT';
@@ -48,6 +48,7 @@ class CMyDevNewsList extends CBitrixComponent
 
         //Фильтр по глобальной переменной
         $this->arrFilter = [];
+
         if (!empty($arParams["FILTER_NAME"]) && preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"])) {
             $this->arrFilter = $GLOBALS[$arParams["FILTER_NAME"]] ?? [];
             if (!is_array($this->arrFilter)) {
@@ -55,15 +56,12 @@ class CMyDevNewsList extends CBitrixComponent
             }
         }
         //Использовать фильтр по полям
-        if ($arParams['USE_FILTER'] === 'Y')
-        {
-            if ($arParams['FILTER_NAME'] == '' || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams['FILTER_NAME']))
-            {
+
+        if ($arParams['USE_FILTER'] === 'Y') {
+            if ($arParams['FILTER_NAME'] == '' || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams['FILTER_NAME'])) {
                 $arParams['FILTER_NAME'] = 'arrFilter';
             }
-        }
-        else
-        {
+        } else {
             $arParams['FILTER_NAME'] = '';
         }
         $arParams['FILTER_FIELD_CODE'] ??= [];
@@ -73,8 +71,13 @@ class CMyDevNewsList extends CBitrixComponent
 
 
         //Фильтр кастомный - содержание строки в названии элемента.
+        var_dump($arParams["FILTER_ELEMENTS_NAME_STR"]);
+        if (!($this->checkStr($arParams["FILTER_ELEMENTS_NAME_STR"]))) {
+            ShowError("Спецсимволы не разрешены");
+        }
+
         if (!empty($arParams["FILTER_ELEMENTS_NAME_STR"]) && $this->checkStr($arParams["FILTER_ELEMENTS_NAME_STR"])) {
-            $this->arrFilter ['NAME'] = "%". $arParams["FILTER_ELEMENTS_NAME_STR"]. "%";
+            $this->arrFilter ['NAME'] = "%" . $arParams["FILTER_ELEMENTS_NAME_STR"] . "%";
         }
 
         $arParams["CHECK_DATES"] = ($arParams["CHECK_DATES"] ?? '') !== "N";
@@ -112,30 +115,24 @@ class CMyDevNewsList extends CBitrixComponent
 
         //Внешний массив с переменными для построения ссылок в постраничной навигации
         $this->pagerParameters = [];
-        if (!empty($arParams["PAGER_PARAMS_NAME"]) && preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["PAGER_PARAMS_NAME"]))
-        {
+        if (!empty($arParams["PAGER_PARAMS_NAME"]) && preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["PAGER_PARAMS_NAME"])) {
             $this->pagerParameters = $GLOBALS[$arParams["PAGER_PARAMS_NAME"]] ?? [];
-            if (!is_array($this->pagerParameters))
-            {
+            if (!is_array($this->pagerParameters)) {
                 $this->pagerParameters = array();
             }
         }
 
         $arParams["USE_PERMISSIONS"] = ($arParams["USE_PERMISSIONS"] ?? '') === "Y";
-        if (!is_array($arParams["GROUP_PERMISSIONS"] ?? null))
-        {
+        if (!is_array($arParams["GROUP_PERMISSIONS"] ?? null)) {
             $adminGroupCode = 1;
             $arParams["GROUP_PERMISSIONS"] = [$adminGroupCode];
         }
 
         $this->bUSER_HAVE_ACCESS = !$arParams["USE_PERMISSIONS"];
-        if ($arParams["USE_PERMISSIONS"] && isset($GLOBALS["USER"]) && is_object($GLOBALS["USER"]))
-        {
+        if ($arParams["USE_PERMISSIONS"] && isset($GLOBALS["USER"]) && is_object($GLOBALS["USER"])) {
             $arUserGroupArray = $GLOBALS['USER']->GetUserGroupArray();
-            foreach ($arParams["GROUP_PERMISSIONS"] as $PERM)
-            {
-                if (in_array($PERM, $arUserGroupArray))
-                {
+            foreach ($arParams["GROUP_PERMISSIONS"] as $PERM) {
+                if (in_array($PERM, $arUserGroupArray)) {
                     $this->bUSER_HAVE_ACCESS = true;
                     break;
                 }
@@ -165,7 +162,7 @@ class CMyDevNewsList extends CBitrixComponent
     private function getResult()
     {
         //Подключение фильра из готового компонента catalog:filter
-        if($this->arParams["USE_FILTER"]=="Y") {
+        if ($this->arParams["USE_FILTER"] == "Y") {
             $res = $this->getCatalogFilter();
             $GLOBALS['APPLICATION']->AddViewContent('myContentBlockName', $res);
         }
@@ -178,10 +175,9 @@ class CMyDevNewsList extends CBitrixComponent
                 $this->arNavigation,
                 $this->arrFilter,
                 $this->pagerParameters
-                )
             )
         )
-        {
+        ) {
             // Валидного кеша нет. Выбираем данные из базы в $arResult
             if (!Loader::includeModule("iblock")) {
                 $this->abortResultCache();
@@ -227,27 +223,10 @@ class CMyDevNewsList extends CBitrixComponent
                     "TYPE" => $this->arParams["IBLOCK_TYPE"],
                 ));
 
-                while ($arResult = $rsIBlock->GetNext()){
+                while ($arResult = $rsIBlock->GetNext()) {
                     $this->arResult['IBLOCKS'][$arResult['ID']] = $arResult;
                 }
             }
-
-            //SELECT
-            $arSelect = array_merge($this->arParams["FIELD_CODE"], array(
-                "ID",
-                "IBLOCK_ID",
-                "IBLOCK_SECTION_ID",
-                "NAME",
-                "ACTIVE_FROM",
-                "TIMESTAMP_X",
-                "DETAIL_PAGE_URL",
-                "LIST_PAGE_URL",
-                "DETAIL_TEXT",
-                "DETAIL_TEXT_TYPE",
-                "PREVIEW_TEXT",
-                "PREVIEW_TEXT_TYPE",
-                "PREVIEW_PICTURE",
-            ));
 
             $bGetProperty = !empty($this->arParams["PROPERTY_CODE"]);
             //WHERE
@@ -271,10 +250,8 @@ class CMyDevNewsList extends CBitrixComponent
                 $arSort["ID"] = "DESC";
 
             $shortSelect = array('ID', 'IBLOCK_ID');
-            foreach (array_keys($arSort) as $index)
-            {
-                if (!in_array($index, $shortSelect))
-                {
+            foreach (array_keys($arSort) as $index) {
+                if (!in_array($index, $shortSelect)) {
                     $shortSelect[] = $index;
                 }
             }
@@ -282,32 +259,28 @@ class CMyDevNewsList extends CBitrixComponent
             $listPageUrl = '';
             $arResult["ITEMS"] = array();
             $arResult["ELEMENTS"] = array();
-            $rsElement = CIBlockElement::GetList($arSort, array_merge($this->arFilter , $this->arrFilter, ($GLOBALS['arrFilter'])??[]), false, $this->arNavParams, $shortSelect);
-            while ($row = $rsElement->Fetch())
-            {
+            $rsElement = CIBlockElement::GetList($arSort, array_merge($this->arFilter, $this->arrFilter, ($GLOBALS['arrFilter']) ?? []), false, $this->arNavParams, $shortSelect);
+            while ($row = $rsElement->Fetch()) {
                 $id = (int)$row['ID'];
                 $arResult["ITEMS"][$id] = $row;
                 $arResult["ELEMENTS"][] = $id;
             }
             unset($row);
 
-            if (!empty($arResult['ITEMS']))
-            {
+            if (!empty($arResult['ITEMS'])) {
                 $elementFilter = array(
                     "IBLOCK_ID" => $arResult["ID"],
                     "IBLOCK_LID" => SITE_ID,
                     "ID" => $arResult["ELEMENTS"]
                 );
-                if (isset($arrFilter['SHOW_NEW']))
-                {
+                if (isset($arrFilter['SHOW_NEW'])) {
                     $elementFilter['SHOW_NEW'] = $arrFilter['SHOW_NEW'];
                 }
 
                 $obParser = new CTextParser;
-                $iterator = CIBlockElement::GetList(array(), $elementFilter, false, false, $arSelect);
+                $iterator = CIBlockElement::GetList(array(), $elementFilter, false, false);
                 $iterator->SetUrlTemplates($this->arParams["DETAIL_URL"], '', ($this->arParams["IBLOCK_URL"] ?? ''));
-                while ($arItem = $iterator->GetNext())
-                {
+                while ($arItem = $iterator->GetNext()) {
                     $arButtons = CIBlock::GetPanelButtons(
                         $arItem["IBLOCK_ID"],
                         $arItem["ID"],
@@ -329,14 +302,12 @@ class CMyDevNewsList extends CBitrixComponent
 
                     $arItem["FIELDS"] = array();
 
-                    if ($bGetProperty)
-                    {
+                    if ($bGetProperty) {
                         $arItem["PROPERTIES"] = array();
                     }
                     $arItem["DISPLAY_PROPERTIES"] = array();
 
-                    if ($this->arParams["SET_LAST_MODIFIED"])
-                    {
+                    if ($this->arParams["SET_LAST_MODIFIED"]) {
                         $time = DateTime::createFromUserTime($arItem["TIMESTAMP_X"]);
                         if (
                             !isset($arResult["ITEMS_TIMESTAMP_X"])
@@ -345,8 +316,7 @@ class CMyDevNewsList extends CBitrixComponent
                             $arResult["ITEMS_TIMESTAMP_X"] = $time;
                     }
 
-                    if ($listPageUrl === '' && isset($arItem['~LIST_PAGE_URL']))
-                    {
+                    if ($listPageUrl === '' && isset($arItem['~LIST_PAGE_URL'])) {
                         $listPageUrl = $arItem['~LIST_PAGE_URL'];
                     }
 
@@ -359,8 +329,7 @@ class CMyDevNewsList extends CBitrixComponent
                 unset($obElement);
                 unset($iterator);
 
-                if ($bGetProperty)
-                {
+                if ($bGetProperty) {
                     unset($elementFilter['IBLOCK_LID']);
                     CIBlockElement::GetPropertyValuesArray(
                         $arResult["ITEMS"],
@@ -371,35 +340,29 @@ class CMyDevNewsList extends CBitrixComponent
             }
 
             $navComponentParameters = array();
-            if ($this->arParams["PAGER_BASE_LINK_ENABLE"] === "Y")
-            {
+            if ($this->arParams["PAGER_BASE_LINK_ENABLE"] === "Y") {
                 $pagerBaseLink = trim($this->arParams["PAGER_BASE_LINK"]);
-                if ($pagerBaseLink === "")
-                {
+                if ($pagerBaseLink === "") {
                     if (
                         $arResult["SECTION"]
                         && $arResult["SECTION"]["PATH"]
                         && $arResult["SECTION"]["PATH"][0]
                         && $arResult["SECTION"]["PATH"][0]["~SECTION_PAGE_URL"]
-                    )
-                    {
+                    ) {
                         $pagerBaseLink = $arResult["SECTION"]["PATH"][0]["~SECTION_PAGE_URL"];
-                    }
-                    elseif (
+                    } elseif (
                         $listPageUrl !== ''
-                    )
-                    {
+                    ) {
                         $pagerBaseLink = $listPageUrl;
                     }
                 }
 
-                if ($this->pagerParameters && isset($this->pagerParameters["BASE_LINK"]))
-                {
+                if ($this->pagerParameters && isset($this->pagerParameters["BASE_LINK"])) {
                     $pagerBaseLink = $this->pagerParameters["BASE_LINK"];
                     unset($this->pagerParameters["BASE_LINK"]);
                 }
 
-                $navComponentParameters["BASE_LINK"] = CHTTP::urlAddParams($pagerBaseLink, $this->pagerParameters, array("encode"=>true));
+                $navComponentParameters["BASE_LINK"] = CHTTP::urlAddParams($pagerBaseLink, $this->pagerParameters, array("encode" => true));
             }
             $this->arResult["NAV_STRING"] = $rsElement->GetPageNavStringEx(
                 $navComponentObject,
@@ -415,21 +378,14 @@ class CMyDevNewsList extends CBitrixComponent
 
     private function checkStr($str): bool
     {
-        $strings = array('AbCd1zyZ9', 'foo!#$bar');
-        foreach ($strings as $str) {
-            if (ctype_alnum($str)) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return preg_match('/^[а-яА-ЯёЁa-zA-Z0-9]+$/u', $str);
     }
 
     private function getCatalogFilter()
     {
         ob_start();
         $GLOBALS[$this->arParams["FILTER_NAME"]] = [];
-        $GLOBALS['APPLICATION']->IncludeComponent(
+        $res = $GLOBALS['APPLICATION']->IncludeComponent(
             "bitrix:catalog.filter",
             "",
             [
@@ -445,9 +401,32 @@ class CMyDevNewsList extends CBitrixComponent
             ],
             $GLOBALS['component'],
             ['HIDE_ICONS' => 'Y'],
+            true,
         );
+
+        $this->parametersValidate($res['ITEMS']);
         $out = ob_get_contents();
         ob_end_clean();
         return $out;
+    }
+
+    private function parametersValidate(mixed $items)
+    {
+        foreach ($items as $key => $value) {
+            switch ($key) {
+                case "ID":
+                    if (!($value['INPUT_VALUE']['LEFT'] == '' || is_numeric($value['INPUT_VALUE']['LEFT']))) {
+                        ShowError('ID должно быть числом');
+                    }
+                    if (!($value['INPUT_VALUE']['RIGHT'] == '' || is_numeric($value['INPUT_VALUE']['RIGHT']))) {
+                        ShowError('ID должно быть числом');
+                    }
+                    break;
+                case "NAME":
+                    if (!($this->checkStr($value['INPUT_VALUE']))) {
+                        ShowError('Название может содержать только буквы и цифры');
+                    }
+            }
+        }
     }
 }
