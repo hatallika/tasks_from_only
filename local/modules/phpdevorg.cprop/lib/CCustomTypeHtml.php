@@ -10,10 +10,11 @@ class CCustomTypeHtml extends \Bitrix\Main\UserField\Types\StringType
             "CLASS_NAME" => "CCustomTypeHtml",
             "DESCRIPTION" => GetMessage("PPROP_NAME"),
             "BASE_TYPE" => "string",
+
         );
     }
 
-    public static function GetEditFormHTML(array $arUserField, ?array $arHtmlControl): string
+    public static function GetEditFormHTMLMulty(array $arUserField, ?array $arHtmlControl): string
 	{
 		if($arUserField["ENTITY_VALUE_ID"]<1 && strlen($arUserField["SETTINGS"]["DEFAULT_VALUE"])>0)
 			$arHtmlControl["VALUE"] = htmlspecialcharsbx($arUserField["SETTINGS"]["DEFAULT_VALUE"]);
@@ -25,8 +26,8 @@ class CCustomTypeHtml extends \Bitrix\Main\UserField\Types\StringType
 		else
 			$name = $arHtmlControl["NAME"];
 
-        var_dump($arUserField, $arHtmlControl, $name);
-		ob_start();
+
+        ob_start();
 
 		CFileMan::AddHTMLEditorFrame(
 			$name,
@@ -46,6 +47,7 @@ class CCustomTypeHtml extends \Bitrix\Main\UserField\Types\StringType
 
 		return $html;
 	}
+
 
     public static function OnBeforeSave($arUserField, $value)
     {

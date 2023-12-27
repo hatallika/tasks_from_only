@@ -38,6 +38,7 @@ class phpdevorg_cprop extends CModule
     function DoInstall()
     {
         global $APPLICATION;
+        global $DOCUMENT_ROOT;
         if($this->isVersionD7())
         {
             $this->InstallDB();
@@ -87,7 +88,8 @@ class phpdevorg_cprop extends CModule
     {
         return [
             ['FROM_MODULE' => 'iblock', 'EVENT' => 'OnIBlockPropertyBuildList', 'TO_METHOD' => 'GetUserTypeDescription', 'CLASS'=>'CIBlockPropertyCprop'],
-            ['FROM_MODULE' => 'main', 'EVENT' => 'OnUserTypeBuildList', 'TO_METHOD' => 'GetUserTypeDescription', 'CLASS'=>'CCustomTypeHtml'],
+            ['FROM_MODULE' => 'main', 'EVENT' => 'OnUserTypeBuildList', 'TO_METHOD' => 'GetUserTypeDescription', 'CLASS'=>'CCustomTypeComplex'],
+            ['FROM_MODULE' => 'main', 'EVENT' => 'onGetPublicEdit', 'TO_METHOD' => 'onGetPublicView', 'CLASS'=>'CCustomTypeComplex'],
         ];
     }
 

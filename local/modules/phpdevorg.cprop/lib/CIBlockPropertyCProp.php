@@ -23,7 +23,7 @@ class CIBlockPropertyCProp
         );
     }
 
-    public static function GetPropertyFieldHtml($arProperty, $value, $strHTMLControlName)
+    public static function GetPropertyField($arProperty, $value, $strHTMLControlName)
     {
         $hideText = Loc::getMessage('IEX_CPROP_HIDE_TEXT');//свернуть
         $clearText = Loc::getMessage('IEX_CPROP_CLEAR_TEXT');//удалить
@@ -355,15 +355,16 @@ class CIBlockPropertyCProp
 
         return $result;
     }
-    public static function showHTMLEditor($code, $title, $arValue, $strHTMLControlName,)
+    public static function showHTMLEditor($code, $title, $arValue, $strHTMLControlName)
     {
+        var_dump($code, $title, $arValue, $strHTMLControlName);
         ob_start();
 
         CFileMan::AddHTMLEditorFrame(
-            $code,
-            $arValue["VALUE"],
+            $strHTMLControlName['VALUE'].'['.$code.']',
+            $arValue["VALUE"][$code],
             $code."_TYPE",
-            strlen($arValue["VALUE"])?"html":"text",
+            strlen($arValue["VALUE"][$code])?"html":"text",
             array(
                 'height' => 10*10,
             )
@@ -586,4 +587,6 @@ class CIBlockPropertyCProp
     {
         return array_pop(explode('.', $filePath));
     }
+
+
 }
