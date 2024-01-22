@@ -96,6 +96,22 @@ $arUrlRewrite=array (
     'PATH' => '/content/articles/index.php',
     'SORT' => 100,
   ),
+  23 => 
+  array (
+    'CONDITION' => '#^/site_yn/services/#',
+    'RULE' => '',
+    'ID' => 'bitrix:catalog',
+    'PATH' => '/site_yn/services/index.php',
+    'SORT' => 100,
+  ),
+  24 => 
+  array (
+    'CONDITION' => '#^/site_yn/products/#',
+    'RULE' => '',
+    'ID' => 'bitrix:catalog',
+    'PATH' => '/site_yn/products/index.php',
+    'SORT' => 100,
+  ),
   15 => 
   array (
     'CONDITION' => '#^/content/gallery/#',
@@ -150,6 +166,14 @@ $arUrlRewrite=array (
     'RULE' => '',
     'ID' => 'bitrix:photogallery_user',
     'PATH' => '/club/gallery/index.php',
+    'SORT' => 100,
+  ),
+  25 => 
+  array (
+    'CONDITION' => '#^/site_yn/news/#',
+    'RULE' => '',
+    'ID' => 'bitrix:news',
+    'PATH' => '/site_yn/news/index.php',
     'SORT' => 100,
   ),
   22 => 

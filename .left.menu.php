@@ -27,6 +27,13 @@ $aMenuLinks = Array(
 		Array(), 
 		Array(), 
 		"" 
+	),
+	Array(
+		"Тестовое", 
+		SITE_DIR."/testovoe.php", 
+		Array(), 
+		Array(), 
+		"" 
 	)
 );
 ?>

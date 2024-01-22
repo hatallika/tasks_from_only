@@ -24,7 +24,7 @@ class CCustomTypeComplex extends StringType
 
     public static function GetEditFormHTML(array $userField, ?array $additionalParameters): string
     {
-        var_dump($userField, $additionalParameters);
+
         $hideText = Loc::getMessage('IEX_CPROP_HIDE_TEXT');//свернуть
         $clearText = Loc::getMessage('IEX_CPROP_CLEAR_TEXT');//удалить
 
@@ -202,7 +202,7 @@ class CCustomTypeComplex extends StringType
 
     public static function ConvertFromDB($arProperty, $arValue): array
     {
-        var_dump($arProperty, $arValue); die();
+
         $return = array();
 
         if (!empty($arValue['VALUE'])) {
@@ -637,7 +637,7 @@ class CCustomTypeComplex extends StringType
      */
     public static function OnBeforeSave($arUserField, $value): string
     {
-        var_dump(1, $value);
+
         $value = \Bitrix\Main\Web\Json::encode($value);
         return $value;
     }
@@ -657,7 +657,6 @@ class CCustomTypeComplex extends StringType
     public static function onGetPublicView($event)
     {
         $params = $event->getParameters();
-        var_dump($params); die();
         $arUserField = $params[0];
         $arAdditionalParameters = $params[1];
         if ($arUserField['USER_TYPE_ID'] == 'string')
